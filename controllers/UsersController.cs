@@ -14,10 +14,12 @@ namespace backend.Controllers
     public class UsersController : ControllerBase
     {
         private readonly WineDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public UsersController(WineDbContext context)
+        public UsersController(WineDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -31,7 +33,6 @@ namespace backend.Controllers
             if (user == null)
                 return Unauthorized();
 
-            // Generate JWT
             var authClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
@@ -39,7 +40,13 @@ namespace backend.Controllers
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"));
+            var jwtSecret = _configuration["JWT_SECRET"];
+            if (string.IsNullOrEmpty(jwtSecret))
+            {
+                throw new Exception("JWT_SECRET is not set in configuration!");
+            }
+
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
 
             var token = new JwtSecurityToken(
                 issuer: "WadeWineAPI",

@@ -6,6 +6,13 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Read secret from environment variable
+var jwtSecret = builder.Configuration["JWT_SECRET"];
+if (string.IsNullOrEmpty(jwtSecret))
+{
+    throw new Exception("JWT_SECRET is not set in configuration! Please configure it in Azure App Service.");
+}
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -41,14 +48,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = "WadeWineAPI",
             ValidAudience = "WadeWineClient",
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("superSecretKey@345"))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
     });
 
 var app = builder.Build();
 
 app.UseRouting();
-app.UseCors("AllowAngularApp");      // ✅ Moved up
+app.UseCors("AllowAngularApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
