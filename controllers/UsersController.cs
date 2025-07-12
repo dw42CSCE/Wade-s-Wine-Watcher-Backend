@@ -16,24 +16,9 @@ namespace backend.Controllers
             _context = context;
         }
 
-        // GET: api/users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            return Ok(await _context.Users.ToListAsync());
-        }
-
-        // GET: api/users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            return user == null ? NotFound() : Ok(user);
-        }
-
         // POST: api/users/login
         [HttpPost("login")]
-        public async Task<ActionResult<User>> Login([FromBody] LoginRequest loginRequest)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
             var user = await _context.Users
                 .FirstOrDefaultAsync(u =>
@@ -43,8 +28,10 @@ namespace backend.Controllers
             if (user == null)
                 return Unauthorized();
 
-            return Ok(user);
+            // Only return 200 OK, no user data
+            return Ok();
         }
+
     }
 
     public class LoginRequest
