@@ -64,6 +64,10 @@ namespace backend.Controllers
             });
         }
 
+        [HttpGet("test")]
+        public IActionResult Test() => Ok("API is running");
+
+
         public class LoginRequest
         {
             public string Username { get; set; } = string.Empty;
