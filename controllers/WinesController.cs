@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using WadesWineWatcher.Models;
+using wwwbackend.data;
+using System.Text.Json;
 
 namespace WadesWineWatcher.Controllers
 {
@@ -8,21 +10,40 @@ namespace WadesWineWatcher.Controllers
     [Route("api/[controller]")]
     public class WinesController : ControllerBase
     {
-        private readonly string dataFile = Path.Combine("Data", "wines.json");
+        private readonly WineDbContext _context;
 
-        [HttpGet]
-        public IActionResult Get([FromQuery] int userId)
+        public WinesController(WineDbContext context)
         {
-            var json = System.IO.File.ReadAllText(dataFile);
-            var wines = JsonSerializer.Deserialize<List<Wine>>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            _context = context;
+        }
 
-            var userWines = wines != null
-                ? wines.Where(w => w.Users.Contains(userId)).ToList()
-                : [];
+        // GET: api/wines?userId=5
+        [HttpGet]
+        public async Task<IActionResult> Get([FromQuery] int userId)
+        {
+            var wines = await _context.Wines.ToListAsync();
+
+            var userWines = wines.Where(w =>
+            {
+                var userIds = JsonSerializer.Deserialize<List<int>>(w.UsersJson ?? "[]");
+                return userIds?.Contains(userId) ?? false;
+            }).ToList();
+
             return Ok(userWines);
+        }
+
+        // POST: api/wines
+        [HttpPost]
+        public async Task<IActionResult> AddWine([FromBody] Wine wine)
+        {
+            wine.IngredientsJson ??= "[]";
+            wine.RackDatesJson ??= "[]";
+            wine.UsersJson ??= "[]";
+
+            _context.Wines.Add(wine);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Get), new { userId = 0 }, wine); // Dummy userId
         }
     }
 }
