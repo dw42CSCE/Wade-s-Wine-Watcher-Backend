@@ -68,20 +68,20 @@ using (var scope = app.Services.CreateScope())
     try
     {
         dbContext.Database.Migrate();
-        Console.WriteLine("✅ Migrations applied successfully!");
+        Console.WriteLine("Migrations applied successfully!");
 
         if (dbContext.Database.CanConnect())
         {
-            Console.WriteLine("✅ Successfully connected to the database!");
+            Console.WriteLine("Successfully connected to the database!");
         }
         else
         {
-            Console.WriteLine("❌ Could not connect to the database.");
+            Console.WriteLine("Could not connect to the database.");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Database migration or connection failed: {ex.Message}");
+        Console.WriteLine($"Database migration or connection failed: {ex.Message}");
     }
 }
 
