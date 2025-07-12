@@ -25,6 +25,7 @@ namespace backend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
+            Console.WriteLine("Login Called");
             var user = await _context.Users
                 .FirstOrDefaultAsync(u =>
                     u.username == loginRequest.Username &&

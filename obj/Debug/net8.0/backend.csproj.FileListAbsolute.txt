@@ -204,3 +204,4 @@ C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\ru\Microsof
 C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
