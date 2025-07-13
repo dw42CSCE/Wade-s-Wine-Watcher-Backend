@@ -13,10 +13,14 @@ namespace WadesWineWatcher.Models
         public DateTime StartDate { get; set; }
         public double StartSpecificGravity { get; set; }
         public double EndSpecificGravity { get; set; }
+
+        [Column("ingredients")]
         public string IngredientsJson { get; set; } = "[]";
+
+        [Column("rackDates")]
         public string RackDatesJson { get; set; } = "[]";
+
+        [Column("users")]
         public string UsersJson { get; set; } = "[]";
     }
 }
-
-
