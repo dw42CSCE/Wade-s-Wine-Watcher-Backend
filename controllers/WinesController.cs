@@ -1,26 +1,22 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WadesWineWatcher.Models;
-// Add the following using if WineDBContext is in a different namespace
-using wwwbackend.data; // Ensure this namespace contains the WineDBContext class
-using System.Text.Json;
+using wwwbackend.data;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
-namespace wwwbackend.controllers
+namespace wwwbackend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class WinesController : ControllerBase
     {
-        // Make sure the context class name matches your actual DbContext class
         private readonly WineDbContext _context;
         public WinesController(WineDbContext context)
         {
             _context = context;
         }
 
-        // Returns all user wines
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Get()
@@ -31,69 +27,27 @@ namespace wwwbackend.controllers
 
             var userId = int.Parse(userIdClaim.Value);
 
-            var wines = await _context.Wines.ToListAsync();
+            var userWinesRaw = await _context.Wines
+                .Where(w => w.WineUsers.Any(wu => wu.UserId == userId))
+                .ToListAsync();
 
-            var userWines = wines
-                .Where(w =>
-                {
-                    var usersJson = string.IsNullOrWhiteSpace(w.UsersJson) ? "[]" : w.UsersJson;
-                    List<int> userIds;
-                    try
-                    {
-                        userIds = JsonSerializer.Deserialize<List<int>>(usersJson) ?? new List<int>();
-                    }
-                    catch
-                    {
-                        userIds = new List<int>();
-                    }
-                    return userIds.Contains(userId);
-                })
-                .Select(w =>
-                {
-                    var ingredientsJson = string.IsNullOrWhiteSpace(w.IngredientsJson) ? "[]" : w.IngredientsJson;
-                    var rackDatesJson = string.IsNullOrWhiteSpace(w.RackDatesJson) ? "[]" : w.RackDatesJson;
-
-                    List<string> ingredients;
-                    List<DateTime> rackDates;
-
-                    try
-                    {
-                        ingredients = JsonSerializer.Deserialize<List<string>>(ingredientsJson) ?? new List<string>();
-                    }
-                    catch
-                    {
-                        ingredients = new List<string>();
-                    }
-
-                    try
-                    {
-                        rackDates = JsonSerializer.Deserialize<List<DateTime>>(rackDatesJson) ?? new List<DateTime>();
-                    }
-                    catch
-                    {
-                        rackDates = new List<DateTime>();
-                    }
-
-                    return new WineDto
-                    {
-                        Id = w.Id,
-                        Name = w.Name,
-                        Description = w.Description,
-                        StartDate = w.StartDate,
-                        StartSpecificGravity = w.StartSpecificGravity,
-                        EndSpecificGravity = w.EndSpecificGravity,
-                        Ingredients = ingredients,
-                        RackDates = rackDates
-                    };
-                })
-                .ToList();
+            var userWines = userWinesRaw.Select(w => new WineDto
+            {
+                Id = w.Id,
+                Name = w.Name,
+                Description = w.Description,
+                StartDate = w.StartDate,
+                StartSpecificGravity = w.StartSpecificGravity,
+                EndSpecificGravity = w.EndSpecificGravity,
+                Ingredients = string.IsNullOrWhiteSpace(w.Ingredients) ? new List<string>() : w.Ingredients.Split(',').ToList(),
+                RackDates = string.IsNullOrWhiteSpace(w.RackDates) ? new List<DateTime>() : w.RackDates.Split(',').Select(DateTime.Parse).ToList()
+            }).ToList();
 
             return Ok(userWines);
         }
 
-        // POST: api/wines
-        [HttpPost]
         [Authorize]
+        [HttpPost]
         public async Task<IActionResult> AddWine([FromBody] Wine wine)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -102,43 +56,19 @@ namespace wwwbackend.controllers
 
             int userId = int.Parse(userIdClaim.Value);
 
-            // Initialize JSON properties if null or empty
-            wine.IngredientsJson = string.IsNullOrWhiteSpace(wine.IngredientsJson) ? "[]" : wine.IngredientsJson;
-            wine.RackDatesJson = string.IsNullOrWhiteSpace(wine.RackDatesJson) ? "[]" : wine.RackDatesJson;
-            wine.UsersJson = string.IsNullOrWhiteSpace(wine.UsersJson) ? "[]" : wine.UsersJson;
-
-            // Add current user ID to UsersJson list
-            List<int> usersList;
-            try
-            {
-                usersList = JsonSerializer.Deserialize<List<int>>(wine.UsersJson) ?? new List<int>();
-            }
-            catch
-            {
-                usersList = new List<int>();
-            }
-
-            if (!usersList.Contains(userId))
-                usersList.Add(userId);
-
-            wine.UsersJson = JsonSerializer.Serialize(usersList);
-
             _context.Wines.Add(wine);
             await _context.SaveChangesAsync();
 
-            var wineDto = new WineDto
+            // Link user
+            var wineUser = new WineUser
             {
-                Id = wine.Id,
-                Name = wine.Name,
-                Description = wine.Description,
-                StartDate = wine.StartDate,
-                StartSpecificGravity = wine.StartSpecificGravity,
-                EndSpecificGravity = wine.EndSpecificGravity,
-                Ingredients = JsonSerializer.Deserialize<List<string>>(wine.IngredientsJson) ?? new List<string>(),
-                RackDates = JsonSerializer.Deserialize<List<DateTime>>(wine.RackDatesJson) ?? new List<DateTime>()
+                WineId = wine.Id,
+                UserId = userId
             };
+            _context.WineUsers.Add(wineUser);
+            await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Get), new { userId = userId }, wineDto);
+            return CreatedAtAction(nameof(Get), new { id = wine.Id }, wine);
         }
 
         public class WineDto
