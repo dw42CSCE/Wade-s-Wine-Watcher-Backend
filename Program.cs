@@ -27,9 +27,16 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Add DbContext
+var connectionString =
+    builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING") ??
+    Environment.GetEnvironmentVariable("AZURE_SQL_CONNECTIONSTRING");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new Exception("SQL connection string is missing.");
+
 builder.Services.AddDbContext<WineDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AZURE_SQL_CONNECTIONSTRING")));
+    options.UseSqlServer(connectionString));
+
 
 // Add Controllers
 builder.Services.AddControllers()

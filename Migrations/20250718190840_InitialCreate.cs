@@ -37,19 +37,50 @@ namespace backend.Migrations
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     StartSpecificGravity = table.Column<double>(type: "float", nullable: false),
                     EndSpecificGravity = table.Column<double>(type: "float", nullable: false),
-                    IngredientsJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RackDatesJson = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UsersJson = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Ingredients = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    RackDates = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Wines", x => x.Id);
                 });
+
+            migrationBuilder.CreateTable(
+                name: "WineUsers",
+                columns: table => new
+                {
+                    WineId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WineUsers", x => new { x.WineId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_WineUsers_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WineUsers_Wines_WineId",
+                        column: x => x.WineId,
+                        principalTable: "Wines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WineUsers_UserId",
+                table: "WineUsers",
+                column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "WineUsers");
+
             migrationBuilder.DropTable(
                 name: "Users");
 
