@@ -11,5 +11,6 @@ namespace WadesWineWatcher.Models
         public string password { get; set; } = string.Empty;
 
         public ICollection<WineUser> WineUsers { get; set; } = new List<WineUser>();
+        public ICollection<Event> EventsCreated { get; set; } = new List<Event>();
     }
 }

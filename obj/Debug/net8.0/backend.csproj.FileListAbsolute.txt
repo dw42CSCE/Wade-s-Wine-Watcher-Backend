@@ -206,3 +206,4 @@ C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\zh-Hans\Mic
 C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\web.config
+C:\Users\funky\OneDrive\Desktop\Projects\wwwbackend\bin\Debug\net8.0\BCrypt.Net-Next.dll

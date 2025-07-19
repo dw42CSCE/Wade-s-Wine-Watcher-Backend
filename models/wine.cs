@@ -17,5 +17,6 @@ namespace WadesWineWatcher.Models
         public string RackDates { get; set; } = "";
 
         public ICollection<WineUser> WineUsers { get; set; } = new List<WineUser>();
+        public ICollection<Event> Events { get; set; } = new List<Event>();
     }
 }
