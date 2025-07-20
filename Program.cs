@@ -73,12 +73,18 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<WineDbContext>();
-
         var pendingMigrations = dbContext.Database.GetPendingMigrations();
         Console.WriteLine($"Pending Migrations: {string.Join(", ", pendingMigrations)}");
 
-        dbContext.Database.Migrate();
-        Console.WriteLine("Migrations applied successfully!");
+        try
+        {
+            dbContext.Database.Migrate();
+            Console.WriteLine("Migrations applied successfully!");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Migration failed: {ex.Message}");
+        }
 
 }
 
