@@ -87,5 +87,5 @@ using (var scope = app.Services.CreateScope())
         }
 
 }
-// somwthing to cmmit
+// somwthing to cmmi
 app.Run();
