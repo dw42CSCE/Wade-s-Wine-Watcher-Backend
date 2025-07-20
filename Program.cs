@@ -76,7 +76,7 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        dbContext.Database.Migrate();
+        dbContext.Database.Migrate(); //attemping migartion again
         Console.WriteLine("Migrations applied successfully!");
 
         if (dbContext.Database.CanConnect())
