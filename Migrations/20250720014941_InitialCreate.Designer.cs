@@ -12,7 +12,7 @@ using wwwbackend.data;
 namespace backend.Migrations
 {
     [DbContext(typeof(WineDbContext))]
-    [Migration("20250720011326_InitialCreate")]
+    [Migration("20250720014941_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

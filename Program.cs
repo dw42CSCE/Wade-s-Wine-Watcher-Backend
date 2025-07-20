@@ -69,25 +69,25 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<WineDbContext>();
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+// using (var scope = app.Services.CreateScope())
+// {
+//     var dbContext = scope.ServiceProvider.GetRequiredService<WineDbContext>();
+//     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-    var pendingMigrations = dbContext.Database.GetPendingMigrations();
-    logger.LogInformation("Pending Migrations: {Migrations}", string.Join(", ", pendingMigrations));
+//     var pendingMigrations = dbContext.Database.GetPendingMigrations();
+//     logger.LogInformation("Pending Migrations: {Migrations}", string.Join(", ", pendingMigrations));
 
-    try
-    {
-        dbContext.Database.Migrate();
-        logger.LogInformation("Migrations applied successfully!");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Migration failed");
-        throw; // optionally rethrow to stop app if migrations fail
-    }
-}
+//     try
+//     {
+//         dbContext.Database.Migrate();
+//         logger.LogInformation("Migrations applied successfully!");
+//     }
+//     catch (Exception ex)
+//     {
+//         logger.LogError(ex, "Migration failed");
+//         throw; // optionally rethrow to stop app if migrations fail
+//     }
+// }
 
 // somwthing to cmmi
 app.Run();
