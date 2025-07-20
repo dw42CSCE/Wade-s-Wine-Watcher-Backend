@@ -76,16 +76,17 @@ using (var scope = app.Services.CreateScope())
 
     try
     {
-        dbContext.Database.Migrate(); //attemping migartion again
-        Console.WriteLine("Migrations applied successfully!");
+        var pendingMigrations = dbContext.Database.GetPendingMigrations();
+        Console.WriteLine($"Pending Migrations: {string.Join(", ", pendingMigrations)}");
 
-        if (dbContext.Database.CanConnect())
+        try
         {
-            Console.WriteLine("Successfully connected to the database!");
+            dbContext.Database.Migrate();
+            Console.WriteLine("Migrations applied successfully!");
         }
-        else
+        catch (Exception ex)
         {
-            Console.WriteLine("Could not connect to the database.");
+            Console.WriteLine($"Migration failed: {ex.Message}");
         }
     }
     catch (Exception ex)
