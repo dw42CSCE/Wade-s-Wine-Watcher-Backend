@@ -12,7 +12,7 @@ using wwwbackend.data;
 namespace backend.Migrations
 {
     [DbContext(typeof(WineDbContext))]
-    [Migration("20250718190840_InitialCreate")]
+    [Migration("20250720011326_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,6 +24,40 @@ namespace backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("WadesWineWatcher.Models.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CreatorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("EventDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WineId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("WineId");
+
+                    b.ToTable("Events");
+                });
 
             modelBuilder.Entity("WadesWineWatcher.Models.User", b =>
                 {
@@ -103,6 +137,25 @@ namespace backend.Migrations
                     b.ToTable("WineUsers");
                 });
 
+            modelBuilder.Entity("WadesWineWatcher.Models.Event", b =>
+                {
+                    b.HasOne("WadesWineWatcher.Models.User", "Creator")
+                        .WithMany("EventsCreated")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("WadesWineWatcher.Models.Wine", "Wine")
+                        .WithMany("Events")
+                        .HasForeignKey("WineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Wine");
+                });
+
             modelBuilder.Entity("WadesWineWatcher.Models.WineUser", b =>
                 {
                     b.HasOne("WadesWineWatcher.Models.User", "User")
@@ -124,11 +177,15 @@ namespace backend.Migrations
 
             modelBuilder.Entity("WadesWineWatcher.Models.User", b =>
                 {
+                    b.Navigation("EventsCreated");
+
                     b.Navigation("WineUsers");
                 });
 
             modelBuilder.Entity("WadesWineWatcher.Models.Wine", b =>
                 {
+                    b.Navigation("Events");
+
                     b.Navigation("WineUsers");
                 });
 #pragma warning restore 612, 618
