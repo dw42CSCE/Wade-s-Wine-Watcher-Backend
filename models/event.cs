@@ -6,7 +6,6 @@ namespace WadesWineWatcher.Models
     {
         [Key]
         public int Id { get; set; }
-
         public int WineId { get; set; }
         public Wine? Wine { get; set; }  // Navigation property to Wine
 
