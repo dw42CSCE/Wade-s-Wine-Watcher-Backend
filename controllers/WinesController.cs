@@ -47,7 +47,7 @@ namespace wwwbackend.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpPost("addwine")]
         public async Task<IActionResult> AddWine([FromBody] Wine wine)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -70,6 +70,47 @@ namespace wwwbackend.Controllers
 
             return CreatedAtAction(nameof(Get), new { id = wine.Id }, wine);
         }
+
+        [Authorize]
+        [HttpPut]
+        public async Task<IActionResult> EditWine([FromBody] WineDto wineDto)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var wineOwned = await _context.Wines
+                .Include(w => w.WineUsers)
+                .FirstOrDefaultAsync(w => w.Id == wineDto.Id);
+
+            if (wineOwned == null)
+                return NotFound();
+
+            if (!wineOwned.WineUsers.Any(wu => wu.UserId == userId))
+                return Forbid();
+
+            wineOwned.Name = wineDto.Name;
+            wineOwned.Description = wineDto.Description;
+            wineOwned.StartDate = wineDto.StartDate;
+            wineOwned.StartSpecificGravity = wineDto.StartSpecificGravity;
+            wineOwned.EndSpecificGravity = wineDto.EndSpecificGravity;
+
+            // Convert arrays to comma-separated strings
+            wineOwned.Ingredients = wineDto.Ingredients != null
+                ? string.Join(",", wineDto.Ingredients)
+                : "";
+
+            wineOwned.RackDates = wineDto.RackDates != null
+                ? string.Join(",", wineDto.RackDates.Select(d => d.ToString("o")))
+                : "";
+
+            await _context.SaveChangesAsync();
+
+            return Ok(wineOwned);
+        }   
+
 
         public class WineDto
         {
