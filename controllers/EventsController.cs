@@ -32,16 +32,31 @@ namespace backend.Controllers
                 return Unauthorized();
 
             var userId = int.Parse(userIdClaim.Value);
-
             newEvent.CreatorId = userId;
 
-            var wineOwned = await _context.Wines
-                .AnyAsync(w => w.Id == newEvent.WineId && w.WineUsers.Any(wu => wu.UserId == userId));
+            var wine = await _context.Wines
+                .Include(w => w.WineUsers)
+                .FirstOrDefaultAsync(w => w.Id == newEvent.WineId);
 
-            if (!wineOwned)
-                return Forbid(); // 403 Forbidden
+            if (wine == null || !wine.WineUsers.Any(wu => wu.UserId == userId))
+                return Forbid();
 
-            _context.Add(newEvent);
+            // Add event
+            _context.Events.Add(newEvent);
+
+            // If it's a Racking event, append the date to the wine's stored racking dates
+            if (newEvent.EventType.Equals("Racking", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(wine.RackDates))
+                {
+                    wine.RackDates = newEvent.EventDate.ToString("yyyy-MM-dd");
+                }
+                else
+                {
+                    wine.RackDates += $",{newEvent.EventDate:yyyy-MM-dd}";
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Addevent), new { id = newEvent.Id }, newEvent);

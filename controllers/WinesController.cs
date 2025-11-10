@@ -47,6 +47,43 @@ namespace wwwbackend.Controllers
         }
 
         [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> RemoveWine(int id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var wine = await _context.Wines
+                .Include(w => w.WineUsers)
+                .FirstOrDefaultAsync(w => w.Id == id);
+
+            if (wine == null)
+                return NotFound();
+
+            if (!wine.WineUsers.Any(wu => wu.UserId == userId))
+                return Forbid();
+
+            var wineUserLink = wine.WineUsers.FirstOrDefault(wu => wu.UserId == userId);
+            if (wineUserLink != null)
+            {
+                _context.WineUsers.Remove(wineUserLink);
+            }
+
+            if (!wine.WineUsers.Any(wu => wu.UserId != userId))
+            {
+                _context.Wines.Remove(wine);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+
+        [Authorize]
         [HttpPost("addwine")]
         public async Task<IActionResult> AddWine([FromBody] Wine wine)
         {
@@ -59,7 +96,6 @@ namespace wwwbackend.Controllers
             _context.Wines.Add(wine);
             await _context.SaveChangesAsync();
 
-            // Link user
             var wineUser = new WineUser
             {
                 WineId = wine.Id,
