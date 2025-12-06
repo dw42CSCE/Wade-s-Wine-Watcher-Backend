@@ -47,6 +47,45 @@ namespace wwwbackend.Controllers
         }
 
         [Authorize]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null)
+                return Unauthorized();
+
+            var userId = int.Parse(userIdClaim.Value);
+
+            var wine = await _context.Wines
+                .Include(w => w.WineUsers)
+                .FirstOrDefaultAsync(w => w.Id == id);
+
+            if (wine == null)
+                return NotFound();
+
+            if (!wine.WineUsers.Any(wu => wu.UserId == userId))
+                return Forbid();
+
+            var dto = new WineDto
+            {
+                Id = wine.Id,
+                Name = wine.Name,
+                Description = wine.Description,
+                StartDate = wine.StartDate,
+                StartSpecificGravity = wine.StartSpecificGravity,
+                EndSpecificGravity = wine.EndSpecificGravity,
+                Ingredients = string.IsNullOrWhiteSpace(wine.Ingredients)
+                    ? new List<string>()
+                    : wine.Ingredients.Split(',').ToList(),
+                RackDates = string.IsNullOrWhiteSpace(wine.RackDates)
+                    ? new List<DateTime>()
+                    : wine.RackDates.Split(',').Select(DateTime.Parse).ToList()
+            };
+
+            return Ok(dto);
+        }
+
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveWine(int id)
         {
